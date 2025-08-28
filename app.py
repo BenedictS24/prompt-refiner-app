@@ -36,6 +36,7 @@ def refine_prompt():
     try:
         # Get and validate input
         original_prompt = request.form.get('prompt', '').strip()
+        selected_tools = request.form.getlist('ai_tools')
         
         if not original_prompt:
             return jsonify({'error': 'Please provide a prompt to refine'}), 400
@@ -43,8 +44,7 @@ def refine_prompt():
         if len(original_prompt) > 5000:
             return jsonify({'error': 'Prompt too long (max 5000 characters)'}), 400
         
-        # Refine the prompt
-        result = refiner.refine_prompt(original_prompt)
+        result = refiner.refine_prompt(original_prompt, selected_tools)
         
         # Store in session for download
         session['last_refined'] = {

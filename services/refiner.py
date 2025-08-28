@@ -7,15 +7,19 @@ class PromptRefiner:
     def __init__(self, llm_client=None):
         self.llm_client = llm_client
     
-    def refine_prompt(self, original_prompt: str) -> Dict[str, str]:
+    def refine_prompt(self, original_prompt: str, selected_tools: List[str] = None) -> Dict[str, str]:
         """Main method to refine a prompt"""
+        if not selected_tools:
+            selected_tools = ['unspecified']
+            
         print(f"[v0] LLM client available: {self.llm_client and self.llm_client.has_llm_available()}")
+        print(f"[v0] Selected AI tools: {selected_tools}")
         
         # Try LLM first if available
         if self.llm_client and self.llm_client.has_llm_available():
             try:
                 print("[v0] Attempting LLM refinement...")
-                result = self.llm_client.refine_with_llm(original_prompt)
+                result = self.llm_client.refine_with_llm(original_prompt, selected_tools)
                 print(f"[v0] LLM refinement successful, result keys: {result.keys()}")
                 return result
             except Exception as e:
@@ -23,9 +27,9 @@ class PromptRefiner:
         
         # Fallback to heuristic refinement
         print("[v0] Using heuristic refinement")
-        return self._heuristic_refine(original_prompt)
+        return self._heuristic_refine(original_prompt, selected_tools)
     
-    def _heuristic_refine(self, original_prompt: str) -> Dict[str, str]:
+    def _heuristic_refine(self, original_prompt: str, selected_tools: List[str]) -> Dict[str, str]:
         """Refine prompt using heuristic rules"""
         refined_sections = []
         improvements = []
@@ -54,6 +58,11 @@ class PromptRefiner:
             refined_sections.append(f"**Requirements:**\n{constraints}")
             improvements.append("added specific requirements")
         
+        tool_guidance = self._get_tool_specific_guidance(selected_tools)
+        if tool_guidance:
+            refined_sections.append(f"**AI Tool Optimization:**\n{tool_guidance}")
+            improvements.append("added tool-specific optimization")
+        
         # Add output format if missing
         if not analysis['has_output_format']:
             output_format = self._suggest_output_format(original_prompt)
@@ -67,7 +76,11 @@ class PromptRefiner:
         refined_prompt = "\n\n".join(refined_sections)
         
         # Create rationale
-        rationale = f"Applied heuristic refinement: {', '.join(improvements)}. Enhanced structure and clarity using prompt engineering best practices."
+        tool_names = ', '.join([t.title() for t in selected_tools if t != 'unspecified'])
+        if tool_names:
+            rationale = f"Applied heuristic refinement optimized for {tool_names}: {', '.join(improvements)}. Enhanced structure and clarity using prompt engineering best practices."
+        else:
+            rationale = f"Applied heuristic refinement: {', '.join(improvements)}. Enhanced structure and clarity using prompt engineering best practices."
         
         return {
             'refined_prompt': refined_prompt,
@@ -160,3 +173,27 @@ class PromptRefiner:
             return "Provide a concise summary with key points highlighted."
         else:
             return "Provide a well-structured response that directly addresses the request."
+    
+    def _get_tool_specific_guidance(self, selected_tools: List[str]) -> str:
+        """Generate tool-specific optimization guidance"""
+        if not selected_tools or selected_tools == ['unspecified']:
+            return ""
+        
+        guidance = []
+        
+        if 'chatgpt' in selected_tools:
+            guidance.append("- For ChatGPT: Use clear, conversational language and break complex tasks into steps")
+        
+        if 'gemini' in selected_tools:
+            guidance.append("- For Gemini: Leverage multimodal capabilities and structured reasoning when applicable")
+        
+        if 'claude' in selected_tools:
+            guidance.append("- For Claude: Emphasize analytical thinking and detailed explanations")
+        
+        if 'perplexity' in selected_tools:
+            guidance.append("- For Perplexity: Include specific search terms and request citations for factual claims")
+        
+        if 'copilot' in selected_tools:
+            guidance.append("- For Copilot: Be specific about code requirements, language, and desired functionality")
+        
+        return "\n".join(guidance) if guidance else ""

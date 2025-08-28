@@ -23,6 +23,39 @@
             </div>
         </div>
         
+        <!-- Added AI tool selection checkboxes -->
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-3">
+                Optimize for AI Tools (select all that apply)
+            </label>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" name="ai_tools" value="unspecified" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <span class="text-sm text-gray-700">Unspecified</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" name="ai_tools" value="chatgpt" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <span class="text-sm text-gray-700">ChatGPT</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" name="ai_tools" value="gemini" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <span class="text-sm text-gray-700">Gemini</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" name="ai_tools" value="claude" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <span class="text-sm text-gray-700">Claude</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" name="ai_tools" value="perplexity" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <span class="text-sm text-gray-700">Perplexity</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    <input type="checkbox" name="ai_tools" value="copilot" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    <span class="text-sm text-gray-700">Copilot</span>
+                </label>
+            </div>
+        </div>
+        
         <button 
             type="submit" 
             id="refineBtn"
@@ -97,6 +130,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const rationale = document.getElementById('rationale');
     const copyBtn = document.getElementById('copyBtn');
     const errorMessage = document.getElementById('errorMessage');
+    
+    const aiToolCheckboxes = document.querySelectorAll('input[name="ai_tools"]');
+    const unspecifiedCheckbox = document.querySelector('input[value="unspecified"]');
+    
+    // Handle checkbox interactions
+    aiToolCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (this.value === 'unspecified') {
+                // If unspecified is checked, uncheck all others
+                if (this.checked) {
+                    aiToolCheckboxes.forEach(cb => {
+                        if (cb.value !== 'unspecified') cb.checked = false;
+                    });
+                }
+            } else {
+                // If any specific tool is checked, uncheck unspecified
+                if (this.checked) {
+                    unspecifiedCheckbox.checked = false;
+                }
+            }
+            
+            // If no checkboxes are selected, check unspecified
+            const anyChecked = Array.from(aiToolCheckboxes).some(cb => cb.checked);
+            if (!anyChecked) {
+                unspecifiedCheckbox.checked = true;
+            }
+        });
+    });
     
     // Character counter
     promptTextarea.addEventListener('input', function() {
