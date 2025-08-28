@@ -68,29 +68,22 @@ Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep 
                 response_text = response.text.strip()
                 
                 # Remove markdown code blocks if present
-                if response_text.startswith('\`\`\`json'):
-                    response_text = response_text[7:]  # Remove \`\`\`json
-                if response_text.endswith('\`\`\`'):
-                    response_text = response_text[:-3]  # Remove \`\`\`
-                
+                if response_text.startswith('```json'):
+                    response_text = response_text[7:]  # Remove ```json
+                if response_text.endswith('```'):
+                    response_text = response_text[:-3]  # Remove ```
+
                 response_text = response_text.strip()
-                
-                # Try to parse as JSON
+
+                # Ensure proper JSON formatting
                 try:
                     result = json.loads(response_text)
-                    print("[v0] Successfully parsed JSON response")
-                    
-                    # Validate required fields
-                    if 'refined_prompt' in result and 'rationale' in result:
-                        return result
-                    else:
-                        print("[v0] Missing required fields in JSON response")
-                        raise json.JSONDecodeError("Missing required fields", response_text, 0)
-                        
+                    formatted_response = json.dumps(result, indent=4)  # Format JSON with indentation
+                    print("[v0] Successfully formatted JSON response")
+                    return json.loads(formatted_response)  # Return as a dictionary
                 except json.JSONDecodeError as e:
-                    print(f"[v0] JSON parsing failed: {e}, using fallback format")
-                    # Extract refined prompt from response
-                    refined_prompt = response.text
+                    print(f"[v0] JSON formatting failed: {e}, using fallback format")
+                    refined_prompt = response_text
                     rationale = "Refined using Gemini 1.5 Flash with prompt engineering best practices."
                     return {'refined_prompt': refined_prompt, 'rationale': rationale}
                     
