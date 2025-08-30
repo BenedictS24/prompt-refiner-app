@@ -12,13 +12,25 @@ from services.llm_client import LLMClient
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(16))
 
+flask_env = os.environ.get('FLASK_ENV', 'development')
+if flask_env == 'production':
+    # Use memory storage for production (simple but functional)
+    limiter = Limiter(
+        key_func=get_remote_address,
+        app=app,
+        default_limits=["200 per day", "50 per hour"],
+        storage_uri="memory://"
+    )
+else:
+    # Use default in-memory for development (suppresses warning)
+    limiter = Limiter(
+        key_func=get_remote_address,
+        app=app,
+        default_limits=["200 per day", "50 per hour"]
+    )
+
 # Security setup
 csrf = CSRFProtect(app)
-limiter = Limiter(
-    key_func=get_remote_address,
-    app=app,
-    default_limits=["200 per day", "50 per hour"]
-)
 
 # Initialize services
 llm_client = LLMClient()
@@ -101,4 +113,11 @@ def health_check():
     return "ok"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    if flask_env == 'production':
+        port = int(os.environ.get('PORT', 5000))
+        debug_mode = False
+    else:
+        port = int(os.environ.get('PORT', 5001))  # Use 5001 locally to avoid AirPlay
+        debug_mode = True
+    
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
