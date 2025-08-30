@@ -7,19 +7,23 @@ class PromptRefiner:
     def __init__(self, llm_client=None):
         self.llm_client = llm_client
     
-    def refine_prompt(self, original_prompt: str, selected_tools: List[str] = None) -> Dict[str, str]:
+    def refine_prompt(self, original_prompt: str, selected_tools: List[str] = None, selected_techniques: List[str] = None, custom_techniques: str = "") -> Dict[str, str]:
         """Main method to refine a prompt"""
         if not selected_tools:
             selected_tools = ['unspecified']
+        if not selected_techniques:
+            selected_techniques = ['auto']
             
         print(f"[v0] LLM client available: {self.llm_client and self.llm_client.has_llm_available()}")
         print(f"[v0] Selected AI tools: {selected_tools}")
+        print(f"[v0] Selected techniques: {selected_techniques}")
+        print(f"[v0] Custom techniques: {custom_techniques}")
         
         # Try LLM first if available
         if self.llm_client and self.llm_client.has_llm_available():
             try:
                 print("[v0] Attempting LLM refinement...")
-                result = self.llm_client.refine_with_llm(original_prompt, selected_tools)
+                result = self.llm_client.refine_with_llm(original_prompt, selected_tools, selected_techniques, custom_techniques)
                 print(f"[v0] LLM refinement successful, result keys: {result.keys()}")
                 return result
             except Exception as e:
@@ -27,9 +31,9 @@ class PromptRefiner:
         
         # Fallback to heuristic refinement
         print("[v0] Using heuristic refinement")
-        return self._heuristic_refine(original_prompt, selected_tools)
+        return self._heuristic_refine(original_prompt, selected_tools, selected_techniques, custom_techniques)
     
-    def _heuristic_refine(self, original_prompt: str, selected_tools: List[str]) -> Dict[str, str]:
+    def _heuristic_refine(self, original_prompt: str, selected_tools: List[str], selected_techniques: List[str], custom_techniques: str) -> Dict[str, str]:
         """Refine prompt using heuristic rules"""
         refined_sections = []
         improvements = []
@@ -49,7 +53,7 @@ class PromptRefiner:
             improvements.append("clarified objective")
         
         # Add the main task with improvements
-        main_task = self._improve_task_description(original_prompt)
+        main_task = self._improve_task_description(original_prompt, selected_techniques, custom_techniques)
         refined_sections.append(f"**Task:** {main_task}")
         
         # Add constraints and requirements
@@ -57,6 +61,11 @@ class PromptRefiner:
         if constraints:
             refined_sections.append(f"**Requirements:**\n{constraints}")
             improvements.append("added specific requirements")
+        
+        technique_guidance = self._get_technique_specific_guidance(selected_techniques, custom_techniques)
+        if technique_guidance:
+            refined_sections.append(f"**Prompting Technique:**\n{technique_guidance}")
+            improvements.append("applied prompt engineering techniques")
         
         tool_guidance = self._get_tool_specific_guidance(selected_tools)
         if tool_guidance:
@@ -77,10 +86,20 @@ class PromptRefiner:
         
         # Create rationale
         tool_names = ', '.join([t.title() for t in selected_tools if t != 'unspecified'])
+        technique_names = ', '.join([t.replace('_', ' ').title() for t in selected_techniques if t != 'auto'])
+        
+        rationale_parts = []
         if tool_names:
-            rationale = f"Applied heuristic refinement optimized for {tool_names}: {', '.join(improvements)}. Enhanced structure and clarity using prompt engineering best practices."
-        else:
-            rationale = f"Applied heuristic refinement: {', '.join(improvements)}. Enhanced structure and clarity using prompt engineering best practices."
+            rationale_parts.append(f"optimized for {tool_names}")
+        if technique_names:
+            rationale_parts.append(f"using {technique_names} techniques")
+        if custom_techniques:
+            rationale_parts.append(f"incorporating custom techniques: {custom_techniques}")
+        
+        rationale = f"Applied heuristic refinement"
+        if rationale_parts:
+            rationale += f" {' and '.join(rationale_parts)}"
+        rationale += f": {', '.join(improvements)}. Enhanced structure and clarity using prompt engineering best practices."
         
         return {
             'refined_prompt': refined_prompt,
@@ -123,14 +142,23 @@ class PromptRefiner:
         
         return f"Complete the following task effectively: {first_sentence}"
     
-    def _improve_task_description(self, prompt: str) -> str:
-        """Improve the main task description"""
-        # Remove redundant phrases and improve clarity
+    def _improve_task_description(self, prompt: str, selected_techniques: List[str], custom_techniques: str) -> str:
+        """Improve the main task description with technique-specific enhancements"""
         improved = prompt.strip()
+        
+        if 'chain_of_thought' in selected_techniques:
+            if 'step' not in improved.lower() and 'think' not in improved.lower():
+                improved += "\n\nThink through this step-by-step, explaining your reasoning at each stage."
+        
+        if 'tree_of_thought' in selected_techniques:
+            improved += "\n\nConsider multiple approaches to this problem, evaluate their merits, and choose the best path forward."
+        
+        if 'self_consistency' in selected_techniques:
+            improved += "\n\nGenerate multiple solutions and verify consistency across approaches."
         
         # Add step-by-step guidance if the task seems complex
         if len(prompt) > 200 or any(word in prompt.lower() for word in ['analyze', 'create', 'develop', 'design']):
-            if 'step' not in prompt.lower():
+            if 'step' not in prompt.lower() and 'chain_of_thought' not in selected_techniques:
                 improved += "\n\nApproach this systematically, considering each aspect carefully."
         
         return improved
@@ -173,6 +201,33 @@ class PromptRefiner:
             return "Provide a concise summary with key points highlighted."
         else:
             return "Provide a well-structured response that directly addresses the request."
+    
+    def _get_technique_specific_guidance(self, selected_techniques: List[str], custom_techniques: str) -> str:
+        """Generate technique-specific guidance"""
+        if selected_techniques == ['auto'] and not custom_techniques:
+            return ""
+        
+        guidance = []
+        
+        if 'chain_of_thought' in selected_techniques:
+            guidance.append("- Use Chain of Thought: Break down complex reasoning into explicit steps")
+        
+        if 'tree_of_thought' in selected_techniques:
+            guidance.append("- Use Tree of Thought: Explore multiple reasoning paths and select the best approach")
+        
+        if 'one_shot' in selected_techniques:
+            guidance.append("- Use One-shot Learning: Provide one clear example to guide the response format")
+        
+        if 'few_shot' in selected_techniques:
+            guidance.append("- Use Few-shot Learning: Include 2-3 examples demonstrating the desired output")
+        
+        if 'self_consistency' in selected_techniques:
+            guidance.append("- Use Self-consistency: Generate multiple reasoning paths and choose the most consistent answer")
+        
+        if custom_techniques:
+            guidance.append(f"- Custom Techniques: Apply {custom_techniques}")
+        
+        return "\n".join(guidance) if guidance else ""
     
     def _get_tool_specific_guidance(self, selected_tools: List[str]) -> str:
         """Generate tool-specific optimization guidance"""
