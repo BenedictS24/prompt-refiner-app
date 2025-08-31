@@ -3,187 +3,227 @@
 {% block content %}
 <!-- Split UI into input view and results view with navigation -->
 <!-- Input View -->
-<div id="inputView" class="space-y-4">
-    <div class="bg-white rounded-lg shadow-md p-4 pt-2">
-        <h2 class="text-xl font-semibold text-gray-800 mb-6">Original Prompt</h2>
+<div id="inputView" class="space-y-6">
+    <!-- Enhanced card styling with modern shadows and gradients -->
+    <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
+        <h2 class="text-xl font-heading font-bold text-slate-800 mb-6 flex items-center">
+            <!-- Added icon for visual appeal -->
+            <svg class="w-6 h-6 text-cyan-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Original Prompt
+        </h2>
         
         <form id="refineForm" class="space-y-6">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             
             <div>
+                <!-- Enhanced textarea with modern styling -->
                 <textarea 
                     id="prompt" 
                     name="prompt" 
-                    rows="8" 
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                    rows="6" 
+                    class="w-full px-6 py-4 border-2 border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-cyan-500/20 focus:border-cyan-500 text-lg bg-white/50 backdrop-blur-sm transition-all duration-200 resize-none"
                     placeholder="Enter your prompt here... (e.g., 'Write me a blog post about AI')"
                     maxlength="5000"
                     required
                 ></textarea>
-                <div class="text-right text-sm text-gray-500 mt-2">
+                <div class="text-right text-xs text-slate-500 mt-2 font-medium">
                     <span id="charCount">0</span>/5000 characters
                 </div>
             </div>
             
             <!-- AI Tool Selection -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <label class="block text-lg font-medium text-gray-700 mb-4">
+            <!-- Enhanced section styling with modern gradients -->
+            <div class="bg-gradient-to-r from-slate-50 to-blue-50 p-3 rounded-xl border border-slate-200/50">
+                <label class="block text-lg font-heading font-bold text-slate-800 mb-2 flex items-center">
+                    <svg class="w-5 h-5 text-cyan-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
                     Optimize for AI Tool
                 </label>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-white">
-                        <input type="radio" name="ai_tools" value="unspecified" checked class="border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <span class="text-base text-gray-700">Unspecified</span>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-1">
+                    <!-- Enhanced radio button styling with hover effects -->
+                    <label class="flex items-center space-x-3 cursor-pointer p-1 rounded-lg hover:bg-white/70 transition-all duration-200 border border-transparent hover:border-cyan-200">
+                        <input type="radio" name="ai_tools" value="unspecified" checked class="w-4 h-4 border-slate-300 text-cyan-600 focus:ring-cyan-500 focus:ring-2">
+                        <span class="text-base text-slate-700 font-medium">Unspecified</span>
                     </label>
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-white">
-                        <input type="radio" name="ai_tools" value="chatgpt" class="border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <span class="text-base text-gray-700">ChatGPT</span>
+                    <label class="flex items-center space-x-3 cursor-pointer p-1 rounded-lg hover:bg-white/70 transition-all duration-200 border border-transparent hover:border-cyan-200">
+                        <input type="radio" name="ai_tools" value="chatgpt" class="w-4 h-4 border-slate-300 text-cyan-600 focus:ring-cyan-500 focus:ring-2">
+                        <span class="text-base text-slate-700 font-medium">ChatGPT</span>
                     </label>
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-white">
-                        <input type="radio" name="ai_tools" value="gemini" class="border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <span class="text-base text-gray-700">Gemini</span>
+                    <label class="flex items-center space-x-3 cursor-pointer p-1 rounded-lg hover:bg-white/70 transition-all duration-200 border border-transparent hover:border-cyan-200">
+                        <input type="radio" name="ai_tools" value="gemini" class="w-4 h-4 border-slate-300 text-cyan-600 focus:ring-cyan-500 focus:ring-2">
+                        <span class="text-base text-slate-700 font-medium">Gemini</span>
                     </label>
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-white">
-                        <input type="radio" name="ai_tools" value="claude" class="border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <span class="text-base text-gray-700">Claude</span>
+                    <label class="flex items-center space-x-3 cursor-pointer p-1 rounded-lg hover:bg-white/70 transition-all duration-200 border border-transparent hover:border-cyan-200">
+                        <input type="radio" name="ai_tools" value="claude" class="w-4 h-4 border-slate-300 text-cyan-600 focus:ring-cyan-500 focus:ring-2">
+                        <span class="text-base text-slate-700 font-medium">Claude</span>
                     </label>
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-white">
-                        <input type="radio" name="ai_tools" value="perplexity" class="border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <span class="text-base text-gray-700">Perplexity</span>
+                    <label class="flex items-center space-x-3 cursor-pointer p-1 rounded-lg hover:bg-white/70 transition-all duration-200 border border-transparent hover:border-cyan-200">
+                        <input type="radio" name="ai_tools" value="perplexity" class="w-4 h-4 border-slate-300 text-cyan-600 focus:ring-cyan-500 focus:ring-2">
+                        <span class="text-base text-slate-700 font-medium">Perplexity</span>
                     </label>
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-white">
-                        <input type="radio" name="ai_tools" value="copilot" class="border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <span class="text-base text-gray-700">Copilot</span>
+                    <label class="flex items-center space-x-3 cursor-pointer p-1 rounded-lg hover:bg-white/70 transition-all duration-200 border border-transparent hover:border-cyan-200">
+                        <input type="radio" name="ai_tools" value="copilot" class="w-4 h-4 border-slate-300 text-cyan-600 focus:ring-cyan-500 focus:ring-2">
+                        <span class="text-base text-slate-700 font-medium">Copilot</span>
                     </label>
                 </div>
             </div>
             
             <!-- Prompt Engineering Techniques -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <label class="block text-lg font-medium text-gray-700 mb-4">
+            <div class="bg-gradient-to-r from-orange-50 to-amber-50 p-3 rounded-xl border border-orange-200/50">
+                <label class="block text-lg font-heading font-bold text-slate-800 mb-2 flex items-center">
+                    <svg class="w-5 h-5 text-orange-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
                     Prompt Engineering Techniques
                 </label>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-white">
-                        <input type="checkbox" name="prompt_techniques" value="auto" checked class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                        <span class="text-base text-gray-700 font-medium">Auto (AI selects best)</span>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-1 mb-2">
+                    <!-- Enhanced checkbox styling with orange accent -->
+                    <label class="flex items-center space-x-3 cursor-pointer p-1 rounded-lg hover:bg-white/70 transition-all duration-200 border border-transparent hover:border-orange-200">
+                        <input type="checkbox" name="prompt_techniques" value="auto" checked class="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 focus:ring-2">
+                        <span class="text-base text-slate-700 font-semibold">Auto (AI selects best)</span>
                     </label>
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-white">
-                        <input type="checkbox" name="prompt_techniques" value="chain_of_thought" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                        <span class="text-base text-gray-700">Chain of Thought</span>
+                    <label class="flex items-center space-x-3 cursor-pointer p-1 rounded-lg hover:bg-white/70 transition-all duration-200 border border-transparent hover:border-orange-200">
+                        <input type="checkbox" name="prompt_techniques" value="chain_of_thought" class="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 focus:ring-2">
+                        <span class="text-base text-slate-700 font-medium">Chain of Thought</span>
                     </label>
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-white">
-                        <input type="checkbox" name="prompt_techniques" value="tree_of_thought" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                        <span class="text-base text-gray-700">Tree of Thought</span>
+                    <label class="flex items-center space-x-3 cursor-pointer p-1 rounded-lg hover:bg-white/70 transition-all duration-200 border border-transparent hover:border-orange-200">
+                        <input type="checkbox" name="prompt_techniques" value="tree_of_thought" class="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 focus:ring-2">
+                        <span class="text-base text-slate-700 font-medium">Tree of Thought</span>
                     </label>
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-white">
-                        <input type="checkbox" name="prompt_techniques" value="one_shot" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                        <span class="text-base text-gray-700">One-shot</span>
+                    <label class="flex items-center space-x-3 cursor-pointer p-1 rounded-lg hover:bg-white/70 transition-all duration-200 border border-transparent hover:border-orange-200">
+                        <input type="checkbox" name="prompt_techniques" value="one_shot" class="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 focus:ring-2">
+                        <span class="text-base text-slate-700 font-medium">One-shot</span>
                     </label>
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-white">
-                        <input type="checkbox" name="prompt_techniques" value="few_shot" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                        <span class="text-base text-gray-700">Few-shot</span>
+                    <label class="flex items-center space-x-3 cursor-pointer p-1 rounded-lg hover:bg-white/70 transition-all duration-200 border border-transparent hover:border-orange-200">
+                        <input type="checkbox" name="prompt_techniques" value="few_shot" class="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 focus:ring-2">
+                        <span class="text-base text-slate-700 font-medium">Few-shot</span>
                     </label>
-                    <label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-white">
-                        <input type="checkbox" name="prompt_techniques" value="self_consistency" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                        <span class="text-base text-gray-700">Self-consistency</span>
+                    <label class="flex items-center space-x-3 cursor-pointer p-1 rounded-lg hover:bg-white/70 transition-all duration-200 border border-transparent hover:border-orange-200">
+                        <input type="checkbox" name="prompt_techniques" value="self_consistency" class="w-4 h-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 focus:ring-2">
+                        <span class="text-base text-slate-700 font-medium">Self-consistency</span>
                     </label>
                 </div>
                 
                 <div>
-                    <label for="custom_techniques" class="block text-base font-medium text-gray-700 mb-2">
+                    <label for="custom_techniques" class="block text-sm font-heading font-semibold text-slate-700 mb-2">
                         Custom Techniques (optional)
                     </label>
+                    <!-- Enhanced input styling -->
                     <input 
                         type="text" 
                         id="custom_techniques" 
                         name="custom_techniques" 
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        class="w-full px-6 py-4 border-2 border-slate-200 rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-orange-500/20 focus:border-orange-500 bg-white/50 backdrop-blur-sm transition-all duration-200"
                         placeholder="e.g., role-playing, step-by-step reasoning, metacognitive prompting..."
                         maxlength="200"
                     >
                 </div>
             </div>
             
+            <!-- Enhanced submit button with gradient and modern styling -->
             <button 
                 type="submit" 
                 id="refineBtn"
-                class="w-full bg-blue-600 text-white py-4 px-6 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-lg font-medium"
+                class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 text-white py-4 px-8 rounded-xl hover:from-cyan-700 hover:to-blue-700 focus:outline-none focus:ring-4 focus:ring-cyan-500/30 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-base font-heading font-bold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]"
             >
-                Refine Prompt
+                <span class="flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Refine Prompt
+                </span>
             </button>
         </form>
     </div>
 </div>
 
 <!-- Results View -->
-<div id="resultsView" class="hidden space-y-6">
-    <div class="bg-white rounded-lg shadow-md p-6">
+<div id="resultsView" class="hidden space-y-8">
+    <!-- Enhanced results card with modern styling -->
+    <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
         <!-- Header with back button -->
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between mb-8">
+            <!-- Enhanced back button styling -->
             <button 
                 id="backBtn"
-                class="flex items-center space-x-2 text-blue-600 hover:text-blue-700 focus:outline-none"
+                class="flex items-center space-x-3 text-cyan-600 hover:text-cyan-700 focus:outline-none bg-cyan-50 hover:bg-cyan-100 px-4 py-2 rounded-lg transition-all duration-200"
             >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
-                <span class="text-base font-medium">Back to Input</span>
+                <span class="text-base font-heading font-semibold">Back to Input</span>
             </button>
-            <h1 class="text-2xl font-bold text-gray-900">Refined Prompt</h1>
+            <!-- Adjusted heading position by adding negative margin to shift it left -->
+            <h1 class="text-3xl font-heading font-bold text-slate-800 flex items-center justify-center flex-1 -ml-16">
+                <svg class="w-8 h-8 text-cyan-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Refined Prompt
+            </h1>
             <div class="space-x-3">
+                <!-- Enhanced action buttons with modern styling -->
                 <button 
                     id="copyBtn"
-                    class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    class="bg-slate-600 text-white px-6 py-3 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-slate-500/30 font-heading font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
                 >
-                    Copy
+                    <!-- Increased copy icon size from w-4 h-4 to w-5 h-5 -->
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        Copy
+                    </span>
                 </button>
-                <a 
-                    id="downloadBtn"
-                    href="/download"
-                    class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 inline-block"
-                >
-                    Download
-                </a>
             </div>
         </div>
         
         <!-- Refined Prompt Display -->
-        <div class="mb-6">
-            <div id="refinedPrompt" class="bg-gray-50 p-6 rounded-lg border font-mono text-base whitespace-pre-wrap min-h-32 max-h-96 overflow-y-auto"></div>
+        <div class="mb-8">
+            <!-- Enhanced prompt display with modern styling -->
+            <div id="refinedPrompt" class="bg-gradient-to-br from-slate-50 to-blue-50 p-8 rounded-xl border-2 border-slate-200 font-mono text-base whitespace-pre-wrap min-h-32 max-h-96 overflow-y-auto shadow-inner"></div>
         </div>
         
         <!-- AI Platform Links -->
         <div class="py-6">
-            <h3 class="text-lg font-medium text-gray-700 mb-4">Try this prompt on:</h3>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <h3 class="text-xl font-heading font-bold text-slate-700 mb-6 flex items-center">
+                <!-- Changed icon from external link to sharing icon for better visual appeal -->
+                <svg class="w-6 h-6 text-orange-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                </svg>
+                Try this prompt on:
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <!-- Enhanced platform buttons with modern gradients -->
                 <button 
                     id="goToChatGPT"
-                    class="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-center"
+                    class="bg-gradient-to-r from-emerald-600 to-green-600 text-white px-4 py-4 rounded-xl hover:from-emerald-700 hover:to-green-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 text-center font-heading font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                     ChatGPT
                 </button>
                 <button 
                     id="goToGemini"
-                    class="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-center"
+                    class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-4 rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-500/30 text-center font-heading font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                     Gemini
                 </button>
                 <button 
                     id="goToClaude"
-                    class="bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 text-center"
+                    class="bg-gradient-to-r from-purple-600 to-violet-600 text-white px-4 py-4 rounded-xl hover:from-purple-700 hover:to-violet-700 focus:outline-none focus:ring-4 focus:ring-purple-500/30 text-center font-heading font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                     Claude
                 </button>
                 <button 
                     id="goToPerplexity"
-                    class="bg-teal-600 text-white px-4 py-3 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 text-center"
+                    class="bg-gradient-to-r from-teal-600 to-cyan-600 text-white px-4 py-4 rounded-xl hover:from-teal-700 hover:to-cyan-700 focus:outline-none focus:ring-4 focus:ring-teal-500/30 text-center font-heading font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                     Perplexity
                 </button>
                 <button 
                     id="goToCopilot"
-                    class="bg-gray-600 text-white px-4 py-3 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 text-center"
+                    class="bg-gradient-to-r from-slate-600 to-gray-600 text-white px-4 py-4 rounded-xl hover:from-slate-700 hover:to-gray-700 focus:outline-none focus:ring-4 focus:ring-slate-500/30 text-center font-heading font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                     Copilot
                 </button>
@@ -193,11 +233,15 @@
 </div>
 
 <!-- Error Display -->
-<div id="error" class="hidden bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+<!-- Enhanced error styling -->
+<div id="error" class="hidden bg-red-50 border-2 border-red-200 rounded-xl p-6 mb-8 shadow-lg">
     <div class="flex">
-        <div class="ml-3">
-            <h3 class="text-base font-medium text-red-800">Error</h3>
-            <div class="mt-2 text-sm text-red-700">
+        <svg class="w-6 h-6 text-red-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <div>
+            <h3 class="text-lg font-heading font-bold text-red-800">Error</h3>
+            <div class="mt-2 text-base text-red-700">
                 <p id="errorMessage"></p>
             </div>
         </div>
@@ -299,13 +343,13 @@ document.addEventListener('DOMContentLoaded', function() {
             await navigator.clipboard.writeText(refinedPrompt.textContent);
             const originalText = copyBtn.textContent;
             copyBtn.textContent = 'Copied!';
-            copyBtn.classList.remove('bg-gray-600', 'hover:bg-gray-700');
+            copyBtn.classList.remove('bg-slate-600', 'hover:bg-slate-700');
             copyBtn.classList.add('bg-green-600', 'hover:bg-green-700');
             
             setTimeout(() => {
                 copyBtn.textContent = originalText;
                 copyBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                copyBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
+                copyBtn.classList.add('bg-slate-600', 'hover:bg-slate-700');
             }, 2000);
         } catch (err) {
             console.error('Failed to copy text: ', err);

@@ -5,20 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Prompt Refinement Tool{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Updated to more professional fonts: Inter for headings and Source Sans Pro for body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Source+Sans+Pro:wght@400;500;600&display=swap" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <style>
+        /* Updated font family definitions to use more professional fonts */
+        .font-heading { font-family: 'Inter', sans-serif; }
+        .font-body { font-family: 'Source Sans Pro', sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <header id="mainHeader" class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Prompt Refinement Tool</h1>
-            <p class="text-gray-600">Transform your prompts using best practices in prompt engineering</p>
+<!-- Updated background with gradient and modern styling -->
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen font-body">
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <!-- Enhanced header with modern styling and gradient text -->
+        <header id="mainHeader" class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-heading font-black bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-4">
+                Prompt Refinement Tool
+            </h1>
+            <p class="text-lg text-slate-600 font-medium max-w-2xl mx-auto leading-relaxed">
+                Transform your prompts using best practices in prompt engineering
+            </p>
         </header>
         
         <main>
             {% block content %}{% endblock %}
         </main>
-        
-        <!-- removed footer section -->
     </div>
     
     {% block scripts %}{% endblock %}
