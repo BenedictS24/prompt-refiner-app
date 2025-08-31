@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Prompt Refiner{% endblock %}</title>
+    <title>{% block title %}Prompt Refinement Tool{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Prompt Refiner</h1>
+        <header id="mainHeader" class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Prompt Refinement Tool</h1>
             <p class="text-gray-600">Transform your prompts using best practices in prompt engineering</p>
         </header>
         
@@ -18,9 +18,7 @@
             {% block content %}{% endblock %}
         </main>
         
-        <footer class="text-center mt-12 text-gray-500 text-sm">
-            <p>Built with Flask • Enhanced with AI when available</p>
-        </footer>
+        <!-- removed footer section -->
     </div>
     
     {% block scripts %}{% endblock %}
