@@ -91,7 +91,7 @@ class LLMClient:
 6. Examples when helpful (especially for few-shot/one-shot techniques)
 7. Brief self-check criteria{technique_context}{tool_context}
 
-IMPORTANT: At the end of the refined prompt, add "Please answer in the language of the original prompt" to ensure responses match the input language.
+IMPORTANT: First detect the language of the original prompt. Then at the end of the refined prompt, add "Please answer in [detected language]" (e.g., "Please answer in German", "Please answer in Spanish", etc.). If the original prompt is in English, add "Please answer in English".
 
 Meta-instruction: If the prompt requires current facts or examples, use search. If it requires structured problem-solving, use reasoning. If it's simple, refine directly.
 
@@ -116,32 +116,35 @@ Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep 
                 response_text = response.text.strip()
                 
                 # Remove markdown code blocks if present
-                if response_text.startswith('\`\`\`json'):
-                    response_text = response_text[7:]  # Remove \`\`\`json
-                if response_text.endswith('\`\`\`'):
-                    response_text = response_text[:-3]  # Remove \`\`\`
-                
+                if response_text.startswith('```json'):
+                    response_text = response_text[7:]  # Remove ```json
+                if response_text.endswith('```'):
+                    response_text = response_text[:-3]  # Remove ```
+
                 response_text = response_text.strip()
-                
-                # Try to parse as JSON
+
+                # Ensure proper JSON formatting
                 try:
                     result = json.loads(response_text)
                     print("[v0] Successfully parsed JSON response")
-                    
+
                     # Validate required fields
                     if 'refined_prompt' in result and 'rationale' in result:
-                        result['refined_prompt'] += f"\n\nPlease answer in the language of the original prompt."
-                        return result
+                        # Ensure proper JSON structure
+                        return {
+                            'refined_prompt': result['refined_prompt'].strip(),
+                            'rationale': result['rationale'].strip()
+                        }
                     else:
                         print("[v0] Missing required fields in JSON response")
                         raise json.JSONDecodeError("Missing required fields", response_text, 0)
-                        
+
                 except json.JSONDecodeError as e:
                     print(f"[v0] JSON parsing failed: {e}, using fallback format")
                     # Extract refined prompt from response
-                    refined_prompt = response.text
+                    refined_prompt = response_text
                     rationale = "Refined using Gemini 1.5 Flash with prompt engineering best practices."
-                    return {'refined_prompt': refined_prompt, 'rationale': rationale}
+                    return {'refined_prompt': refined_prompt.strip(), 'rationale': rationale.strip()}
                     
             except Exception as e:
                 print(f"[v0] Gemini error: {e}")
