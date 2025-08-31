@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from typing import Optional, Dict, Any, List
 
 class LLMClient:
@@ -26,9 +27,34 @@ class LLMClient:
         """Check if Gemini client is available"""
         return self.gemini_client is not None
     
-    def refine_with_llm(self, original_prompt: str, selected_tools: List[str] = None, selected_techniques: List[str] = None, custom_techniques: str = "") -> Dict[str, str]:
+    def _detect_language(self, text: str) -> str:
+        """Simple language detection based on common patterns"""
+        if re.search(r'[äöüß]', text.lower()):
+            return "German"
+        elif re.search(r'[àâäçéèêëïîôùûüÿñæœ]', text.lower()):
+            return "French"
+        elif re.search(r'[áéíóúüñ¿¡]', text.lower()):
+            return "Spanish"
+        elif re.search(r'[àèéìíîòóùú]', text.lower()):
+            return "Italian"
+        elif re.search(r'[ąćęłńóśźż]', text.lower()):
+            return "Polish"
+        elif re.search(r'[\u4e00-\u9fff]', text):
+            return "Chinese"
+        elif re.search(r'[\u3040-\u309f\u30a0-\u30ff]', text):
+            return "Japanese"
+        elif re.search(r'[\uac00-\ud7af]', text):
+            return "Korean"
+        elif re.search(r'[\u0400-\u04ff]', text):
+            return "Russian"
+        else:
+            return "English"
+    
+    def refine_with_llm(self, original_prompt: str, selected_tool: str = "unspecified", selected_techniques: List[str] = None, custom_techniques: str = "") -> Dict[str, str]:
         """Refine prompt using Gemini"""
         print("[v0] Starting Gemini refinement...")
+        
+        detected_language = self._detect_language(original_prompt)
         
         technique_context = ""
         if selected_techniques and selected_techniques != ['auto']:
@@ -52,9 +78,8 @@ class LLMClient:
             technique_context += f"\n\nCUSTOM TECHNIQUES: Also incorporate these custom techniques: {custom_techniques}."
         
         tool_context = ""
-        if selected_tools and selected_tools != ['unspecified']:
-            tool_names = ', '.join([t.title() for t in selected_tools if t != 'unspecified'])
-            tool_context = f"\n\nTOOL OPTIMIZATION: Optimize this prompt specifically for {tool_names}. Consider each tool's strengths and preferred prompt formats."
+        if selected_tool and selected_tool != 'unspecified':
+            tool_context = f"\n\nTOOL OPTIMIZATION: Optimize this prompt specifically for {selected_tool.title()}. Consider this tool's strengths and preferred prompt formats."
         
         system_prompt = f"""You are an expert prompt engineer. Your task is to refine user prompts to follow best practices:
 
@@ -65,6 +90,8 @@ class LLMClient:
 5. Structured output format
 6. Examples when helpful (especially for few-shot/one-shot techniques)
 7. Brief self-check criteria{technique_context}{tool_context}
+
+IMPORTANT: At the end of the refined prompt, add "Please answer in the language of the original prompt" to ensure responses match the input language.
 
 Meta-instruction: If the prompt requires current facts or examples, use search. If it requires structured problem-solving, use reasoning. If it's simple, refine directly.
 
@@ -89,10 +116,10 @@ Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep 
                 response_text = response.text.strip()
                 
                 # Remove markdown code blocks if present
-                if response_text.startswith('```json'):
-                    response_text = response_text[7:]  # Remove ```json
-                if response_text.endswith('```'):
-                    response_text = response_text[:-3]  # Remove ```
+                if response_text.startswith('\`\`\`json'):
+                    response_text = response_text[7:]  # Remove \`\`\`json
+                if response_text.endswith('\`\`\`'):
+                    response_text = response_text[:-3]  # Remove \`\`\`
                 
                 response_text = response_text.strip()
                 
@@ -103,6 +130,7 @@ Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep 
                     
                     # Validate required fields
                     if 'refined_prompt' in result and 'rationale' in result:
+                        result['refined_prompt'] += f"\n\nPlease answer in the language of the original prompt."
                         return result
                     else:
                         print("[v0] Missing required fields in JSON response")

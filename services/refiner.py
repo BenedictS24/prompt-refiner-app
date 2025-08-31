@@ -7,15 +7,13 @@ class PromptRefiner:
     def __init__(self, llm_client=None):
         self.llm_client = llm_client
     
-    def refine_prompt(self, original_prompt: str, selected_tools: List[str] = None, selected_techniques: List[str] = None, custom_techniques: str = "") -> Dict[str, str]:
+    def refine_prompt(self, original_prompt: str, selected_tool: str = "unspecified", selected_techniques: List[str] = None, custom_techniques: str = "") -> Dict[str, str]:
         """Main method to refine a prompt"""
-        if not selected_tools:
-            selected_tools = ['unspecified']
         if not selected_techniques:
             selected_techniques = ['auto']
             
         print(f"[v0] LLM client available: {self.llm_client and self.llm_client.has_llm_available()}")
-        print(f"[v0] Selected AI tools: {selected_tools}")
+        print(f"[v0] Selected AI tool: {selected_tool}")
         print(f"[v0] Selected techniques: {selected_techniques}")
         print(f"[v0] Custom techniques: {custom_techniques}")
         
@@ -23,7 +21,7 @@ class PromptRefiner:
         if self.llm_client and self.llm_client.has_llm_available():
             try:
                 print("[v0] Attempting LLM refinement...")
-                result = self.llm_client.refine_with_llm(original_prompt, selected_tools, selected_techniques, custom_techniques)
+                result = self.llm_client.refine_with_llm(original_prompt, selected_tool, selected_techniques, custom_techniques)
                 print(f"[v0] LLM refinement successful, result keys: {result.keys()}")
                 return result
             except Exception as e:
@@ -31,9 +29,9 @@ class PromptRefiner:
         
         # Fallback to heuristic refinement
         print("[v0] Using heuristic refinement")
-        return self._heuristic_refine(original_prompt, selected_tools, selected_techniques, custom_techniques)
+        return self._heuristic_refine(original_prompt, selected_tool, selected_techniques, custom_techniques)
     
-    def _heuristic_refine(self, original_prompt: str, selected_tools: List[str], selected_techniques: List[str], custom_techniques: str) -> Dict[str, str]:
+    def _heuristic_refine(self, original_prompt: str, selected_tool: str, selected_techniques: List[str], custom_techniques: str) -> Dict[str, str]:
         """Refine prompt using heuristic rules"""
         refined_sections = []
         improvements = []
@@ -67,7 +65,7 @@ class PromptRefiner:
             refined_sections.append(f"**Prompting Technique:**\n{technique_guidance}")
             improvements.append("applied prompt engineering techniques")
         
-        tool_guidance = self._get_tool_specific_guidance(selected_tools)
+        tool_guidance = self._get_tool_specific_guidance(selected_tool)
         if tool_guidance:
             refined_sections.append(f"**AI Tool Optimization:**\n{tool_guidance}")
             improvements.append("added tool-specific optimization")
@@ -84,13 +82,11 @@ class PromptRefiner:
         
         refined_prompt = "\n\n".join(refined_sections)
         
-        # Create rationale
-        tool_names = ', '.join([t.title() for t in selected_tools if t != 'unspecified'])
-        technique_names = ', '.join([t.replace('_', ' ').title() for t in selected_techniques if t != 'auto'])
-        
         rationale_parts = []
-        if tool_names:
-            rationale_parts.append(f"optimized for {tool_names}")
+        if selected_tool != 'unspecified':
+            rationale_parts.append(f"optimized for {selected_tool.title()}")
+        
+        technique_names = ', '.join([t.replace('_', ' ').title() for t in selected_techniques if t != 'auto'])
         if technique_names:
             rationale_parts.append(f"using {technique_names} techniques")
         if custom_techniques:
@@ -229,26 +225,22 @@ class PromptRefiner:
         
         return "\n".join(guidance) if guidance else ""
     
-    def _get_tool_specific_guidance(self, selected_tools: List[str]) -> str:
+    def _get_tool_specific_guidance(self, selected_tool: str) -> str:
         """Generate tool-specific optimization guidance"""
-        if not selected_tools or selected_tools == ['unspecified']:
+        if not selected_tool or selected_tool == 'unspecified':
             return ""
         
         guidance = []
         
-        if 'chatgpt' in selected_tools:
+        if selected_tool == 'chatgpt':
             guidance.append("- For ChatGPT: Use clear, conversational language and break complex tasks into steps")
-        
-        if 'gemini' in selected_tools:
+        elif selected_tool == 'gemini':
             guidance.append("- For Gemini: Leverage multimodal capabilities and structured reasoning when applicable")
-        
-        if 'claude' in selected_tools:
+        elif selected_tool == 'claude':
             guidance.append("- For Claude: Emphasize analytical thinking and detailed explanations")
-        
-        if 'perplexity' in selected_tools:
+        elif selected_tool == 'perplexity':
             guidance.append("- For Perplexity: Include specific search terms and request citations for factual claims")
-        
-        if 'copilot' in selected_tools:
+        elif selected_tool == 'copilot':
             guidance.append("- For Copilot: Be specific about code requirements, language, and desired functionality")
         
         return "\n".join(guidance) if guidance else ""
