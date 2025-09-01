@@ -116,31 +116,42 @@ Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep 
                 response_text = response.text.strip()
                 
                 # Remove markdown code blocks if present
-                if response_text.startswith('\`\`\`json'):
-                    response_text = response_text[7:]  # Remove \`\`\`json
-                if response_text.endswith('\`\`\`'):
-                    response_text = response_text[:-3]  # Remove \`\`\`
-                
+                if response_text.startswith('```json'):
+                    response_text = response_text[7:]  # Remove ```json
+                if response_text.endswith('```'):
+                    response_text = response_text[:-3]  # Remove ```
+
                 response_text = response_text.strip()
-                
-                # Try to parse as JSON
+
+                # Ensure proper JSON formatting
                 try:
                     result = json.loads(response_text)
                     print("[v0] Successfully parsed JSON response")
-                    
+
                     # Validate required fields
                     if 'refined_prompt' in result and 'rationale' in result:
-                        return result
+                        # Ensure proper JSON structure
+                        return {
+                            'refined_prompt': result['refined_prompt'].strip(),
+                            'rationale': result['rationale'].strip()
+                        }
                     else:
                         print("[v0] Missing required fields in JSON response")
                         raise json.JSONDecodeError("Missing required fields", response_text, 0)
-                        
+
                 except json.JSONDecodeError as e:
                     print(f"[v0] JSON parsing failed: {e}, using fallback format")
                     # Extract refined prompt from response
-                    refined_prompt = response.text
+                    refined_prompt = response_text
                     rationale = "Refined using Gemini 1.5 Flash with prompt engineering best practices."
-                    return {'refined_prompt': refined_prompt, 'rationale': rationale}
+                    return {
+                        'refined_prompt': refined_prompt.strip(),
+                        'rationale': rationale.strip()
+                    }
+
+                except Exception as e:
+                    print(f"[v0] Unexpected error: {e}")
+                    raise Exception("An unexpected error occurred while processing the response.")
                     
             except Exception as e:
                 print(f"[v0] Gemini error: {e}")
