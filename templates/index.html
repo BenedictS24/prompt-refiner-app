@@ -3,10 +3,10 @@
 {% block content %}
 <!-- Split UI into input view and results view with navigation -->
 <!-- Input View -->
-<div id="inputView" class="space-y-6">
+<div id="inputView" class="space-y-2">
     <!-- Enhanced card styling with modern shadows and gradients -->
-    <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
-        <h2 class="text-xl font-heading font-bold text-slate-800 mb-6 flex items-center">
+    <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4">
+        <h2 class="text-xl font-heading font-bold text-slate-800 mb-4 flex items-center">
             <!-- Added icon for visual appeal -->
             <svg class="w-6 h-6 text-cyan-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -14,7 +14,7 @@
             Original Prompt
         </h2>
         
-        <form id="refineForm" class="space-y-6">
+        <form id="refineForm" class="space-y-4">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             
             <div>
@@ -141,11 +141,11 @@
 </div>
 
 <!-- Results View -->
-<div id="resultsView" class="hidden space-y-8">
+<div id="resultsView" class="hidden space-y-2">
     <!-- Enhanced results card with modern styling -->
-    <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
+    <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-4">
         <!-- Header with back button -->
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center justify-between mb-4">
             <!-- Enhanced back button styling -->
             <button 
                 id="backBtn"
@@ -181,14 +181,14 @@
         </div>
         
         <!-- Refined Prompt Display -->
-        <div class="mb-8">
+        <div class="mb-4">
             <!-- Enhanced prompt display with modern styling -->
             <div id="refinedPrompt" class="bg-gradient-to-br from-slate-50 to-blue-50 p-8 rounded-xl border-2 border-slate-200 font-mono text-base whitespace-pre-wrap min-h-32 max-h-96 overflow-y-auto shadow-inner"></div>
         </div>
         
         <!-- AI Platform Links -->
-        <div class="py-6">
-            <h3 class="text-xl font-heading font-bold text-slate-700 mb-6 flex items-center">
+        <div class="py-3">
+            <h3 class="text-xl font-heading font-bold text-slate-700 mb-4 flex items-center">
                 <!-- Changed icon from external link to sharing icon for better visual appeal -->
                 <svg class="w-6 h-6 text-orange-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
