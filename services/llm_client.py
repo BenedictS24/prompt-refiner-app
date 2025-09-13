@@ -70,17 +70,26 @@ class LLMClient:
                     technique_names.append('Few-shot Learning (multiple examples)')
                 elif technique == 'self_consistency':
                     technique_names.append('Self-consistency (multiple reasoning paths)')
+                elif technique == 'instruct_reasoning':
+                    technique_names.append('Explicit reasoning instructions (tell the AI to think step by step)')
+                elif technique == 'instruct_search':
+                    technique_names.append('Search instructions (tell the AI to search for current information when needed)')
             
             if technique_names:
                 technique_context = f"\n\nTECHNIQUE REQUIREMENTS: Apply these prompt engineering techniques: {', '.join(technique_names)}."
-        
-        if custom_techniques:
-            technique_context += f"\n\nCUSTOM TECHNIQUES: Also incorporate these custom techniques: {custom_techniques}."
         
         tool_context = ""
         if selected_tool and selected_tool != 'unspecified':
             tool_context = f"\n\nTOOL OPTIMIZATION: Optimize this prompt specifically for {selected_tool.title()}. Consider this tool's strengths and preferred prompt formats."
         
+        meta_instruction = "Meta-instruction: If the prompt requires current facts or examples, use search. If it requires structured problem-solving, use reasoning. If it's simple, refine directly."
+        
+        if selected_techniques:
+            if 'instruct_reasoning' in selected_techniques:
+                meta_instruction += " IMPORTANT: Include explicit instructions for the AI to use step-by-step reasoning or thinking."
+            if 'instruct_search' in selected_techniques:
+                meta_instruction += " IMPORTANT: Include explicit instructions for the AI to search for current information when the task requires up-to-date facts."
+
         system_prompt = f"""You are an expert prompt engineer. Your task is to refine user prompts to follow best practices:
 
 1. Clear role definition
@@ -93,7 +102,7 @@ class LLMClient:
 
 IMPORTANT: First detect the language of the original prompt. Then at the end of the refined prompt, add "Please answer in [detected language]" (e.g., "Please answer in German", "Please answer in Spanish", etc.). If the original prompt is in English, add "Please answer in English".
 
-Meta-instruction: If the prompt requires current facts or examples, use search. If it requires structured problem-solving, use reasoning. If it's simple, refine directly.
+{meta_instruction}
 
 Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep rationale concise (2-3 sentences max)."""
         
@@ -116,10 +125,10 @@ Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep 
                 response_text = response.text.strip()
                 
                 # Remove markdown code blocks if present
-                if response_text.startswith('```json'):
-                    response_text = response_text[7:]  # Remove ```json
-                if response_text.endswith('```'):
-                    response_text = response_text[:-3]  # Remove ```
+                if response_text.startswith('\`\`\`json'):
+                    response_text = response_text[7:]  # Remove \`\`\`json
+                if response_text.endswith('\`\`\`'):
+                    response_text = response_text[:-3]  # Remove \`\`\`
 
                 response_text = response_text.strip()
 
