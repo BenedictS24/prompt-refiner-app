@@ -70,17 +70,26 @@ class LLMClient:
                     technique_names.append('Few-shot Learning (multiple examples)')
                 elif technique == 'self_consistency':
                     technique_names.append('Self-consistency (multiple reasoning paths)')
+                elif technique == 'instruct_reasoning':
+                    technique_names.append('Explicit reasoning instructions (tell the AI to think step by step)')
+                elif technique == 'instruct_search':
+                    technique_names.append('Search instructions (tell the AI to search for current information when needed)')
             
             if technique_names:
                 technique_context = f"\n\nTECHNIQUE REQUIREMENTS: Apply these prompt engineering techniques: {', '.join(technique_names)}."
-        
-        if custom_techniques:
-            technique_context += f"\n\nCUSTOM TECHNIQUES: Also incorporate these custom techniques: {custom_techniques}."
         
         tool_context = ""
         if selected_tool and selected_tool != 'unspecified':
             tool_context = f"\n\nTOOL OPTIMIZATION: Optimize this prompt specifically for {selected_tool.title()}. Consider this tool's strengths and preferred prompt formats."
         
+        meta_instruction = "Meta-instruction: If the prompt requires current facts or examples, use search. If it requires structured problem-solving, use reasoning. If it's simple, refine directly."
+        
+        if selected_techniques:
+            if 'instruct_reasoning' in selected_techniques:
+                meta_instruction += " IMPORTANT: Include explicit instructions for the AI to use step-by-step reasoning or thinking."
+            if 'instruct_search' in selected_techniques:
+                meta_instruction += " IMPORTANT: Include explicit instructions for the AI to search for current information when the task requires up-to-date facts."
+
         system_prompt = f"""You are an expert prompt engineer. Your task is to refine user prompts to follow best practices:
 
 1. Clear role definition
@@ -93,7 +102,7 @@ class LLMClient:
 
 IMPORTANT: First detect the language of the original prompt. Then at the end of the refined prompt, add "Please answer in [detected language]" (e.g., "Please answer in German", "Please answer in Spanish", etc.). If the original prompt is in English, add "Please answer in English".
 
-Meta-instruction: If the prompt requires current facts or examples, use search. If it requires structured problem-solving, use reasoning. If it's simple, refine directly.
+{meta_instruction}
 
 Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep rationale concise (2-3 sentences max)."""
         
@@ -117,30 +126,45 @@ Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep 
                 
                 # Remove markdown code blocks if present
                 if response_text.startswith('\`\`\`json'):
+                    print("[v0] Removing \`\`\`json prefix")
                     response_text = response_text[7:]  # Remove \`\`\`json
                 if response_text.endswith('\`\`\`'):
+                    print("[v0] Removing \`\`\` suffix")
                     response_text = response_text[:-3]  # Remove \`\`\`
-                
+
                 response_text = response_text.strip()
-                
-                # Try to parse as JSON
+                print(f"[v0] Cleaned response: {response_text[:200]}...")
+
+                # Ensure proper JSON formatting
                 try:
                     result = json.loads(response_text)
                     print("[v0] Successfully parsed JSON response")
-                    
+                    print(f"[v0] Extracted refined_prompt: {result.get('refined_prompt', 'NOT FOUND')[:100]}...")
+
                     # Validate required fields
                     if 'refined_prompt' in result and 'rationale' in result:
-                        return result
+                        # Ensure proper JSON structure
+                        return {
+                            'refined_prompt': result['refined_prompt'].strip(),
+                            'rationale': result['rationale'].strip()
+                        }
                     else:
                         print("[v0] Missing required fields in JSON response")
                         raise json.JSONDecodeError("Missing required fields", response_text, 0)
-                        
+
                 except json.JSONDecodeError as e:
                     print(f"[v0] JSON parsing failed: {e}, using fallback format")
                     # Extract refined prompt from response
-                    refined_prompt = response.text
+                    refined_prompt = response_text
                     rationale = "Refined using Gemini 1.5 Flash with prompt engineering best practices."
-                    return {'refined_prompt': refined_prompt, 'rationale': rationale}
+                    return {
+                        'refined_prompt': refined_prompt.strip(),
+                        'rationale': rationale.strip()
+                    }
+
+                except Exception as e:
+                    print(f"[v0] Unexpected error: {e}")
+                    raise Exception("An unexpected error occurred while processing the response.")
                     
             except Exception as e:
                 print(f"[v0] Gemini error: {e}")
