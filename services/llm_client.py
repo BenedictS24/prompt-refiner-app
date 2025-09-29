@@ -134,12 +134,19 @@ Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep 
                     response_text = response_text[:-3]  # Remove ```
 
                 response_text = response_text.strip()
+                print(f"[v0] Cleaned response text: {response_text}")
 
                 # Ensure proper JSON formatting
+                # Format response text as JSON if needed
+                if not response_text.strip().startswith('{'):
+                    response_text = json.dumps({
+                        'refined_prompt': response_text.strip(),
+                        'rationale': 'Refined using Gemini with prompt engineering best practices.'
+                    })
+
                 try:
                     result = json.loads(response_text)
                     print("[v0] Successfully parsed JSON response")
-
                     # Validate required fields
                     if 'refined_prompt' in result and 'rationale' in result:
                         # Ensure proper JSON structure
@@ -149,16 +156,18 @@ Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep 
                         }
                     else:
                         print("[v0] Missing required fields in JSON response")
-                        raise json.JSONDecodeError("Missing required fields", response_text, 0)
+                        # Create properly formatted JSON instead of raising an error
+                        return {
+                            'refined_prompt': response_text.strip(),
+                            'rationale': 'Refined using Gemini with prompt engineering best practices.'
+                        }
 
                 except json.JSONDecodeError as e:
                     print(f"[v0] JSON parsing failed: {e}, using fallback format")
-                    # Extract refined prompt from response
-                    refined_prompt = response_text
-                    rationale = "Refined using Gemini 1.5 Flash with prompt engineering best practices."
+                    # Create properly formatted response
                     return {
-                        'refined_prompt': refined_prompt.strip(),
-                        'rationale': rationale.strip()
+                        'refined_prompt': response_text.strip(),
+                        'rationale': 'Refined using Gemini with prompt engineering best practices.'
                     }
 
                 except Exception as e:
