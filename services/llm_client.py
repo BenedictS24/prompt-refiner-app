@@ -2,30 +2,32 @@ import os
 import json
 import re
 from typing import Optional, Dict, Any, List
+from openai import OpenAI
 
 class LLMClient:
-    """Gemini-only LLM client for prompt refinement"""
+    """OpenAI-based LLM client for prompt refinement"""
     
     def __init__(self):
-        self.gemini_client = None
-        self._init_gemini()
+        self.openai_client = None
+        self._init_openai()
     
-    def _init_gemini(self):
-        """Initialize Gemini client if API key is available"""
-        api_key = os.environ.get('GEMINI_API_KEY')
+    def _init_openai(self):
+        """Initialize OpenAI client if API key is available"""
+        api_key = os.environ.get('OPENAI_API_KEY')
         if api_key:
             try:
-                import google.generativeai as genai
-                genai.configure(api_key=api_key)
-                self.gemini_client = genai.GenerativeModel('gemini-2.5-flash')
+                # Initialize OpenAI client with the API key from environment
+                self.openai_client = OpenAI(
+                    api_key=api_key,  # Explicitly pass the API key
+                )
             except ImportError:
-                print("google-generativeai not installed, Gemini unavailable")
+                print("openai package not installed, OpenAI unavailable")
             except Exception as e:
-                print(f"Failed to initialize Gemini: {e}")
+                print(f"Failed to initialize OpenAI: {e}")
     
     def has_llm_available(self) -> bool:
-        """Check if Gemini client is available"""
-        return self.gemini_client is not None
+        """Check if OpenAI client is available"""
+        return self.openai_client is not None
     
     def _detect_language(self, text: str) -> str:
         """Simple language detection based on common patterns"""
@@ -51,8 +53,8 @@ class LLMClient:
             return "English"
     
     def refine_with_llm(self, original_prompt: str, selected_tool: str = "unspecified", selected_techniques: List[str] = None, custom_techniques: str = "") -> Dict[str, str]:
-        """Refine prompt using Gemini"""
-        print("[v0] Starting Gemini refinement...")
+        """Refine prompt using OpenAI"""
+        print("[v0] Starting OpenAI refinement...")
         
         detected_language = self._detect_language(original_prompt)
         
@@ -111,38 +113,21 @@ Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep 
         
         user_message = f"Please refine this prompt following best practices:\n\n{original_prompt}"
         
-        if self.gemini_client:
+        if self.openai_client:
             try:
-                print("[v0] Making Gemini API call...")
-                response = self.gemini_client.generate_content(
-                    f"{system_prompt}\n\n{user_message}",
-                    generation_config={
-                        "temperature": 0.3,
-                        "max_output_tokens": 2000,
-                    }
+                print("[v0] Making OpenAI API call...")
+                response = self.openai_client.chat.completions.create(
+                    model="gpt-5-mini",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_message}
+                    ],
+                    max_completion_tokens=2000,
+                    response_format={ "type": "json_object" }
                 )
                 
-                print(f"[v0] Gemini response received, length: {len(response.text)}")
-                print(f"[v0] Raw response: {response.text[:200]}...")
-                
-                response_text = response.text.strip()
-                
-                # Remove markdown code blocks if present
-                if response_text.startswith('```json'):
-                    response_text = response_text[7:]  # Remove ```json
-                if response_text.endswith('```'):
-                    response_text = response_text[:-3]  # Remove ```
-
-                response_text = response_text.strip()
-                print(f"[v0] Cleaned response text: {response_text}")
-
-                # Ensure proper JSON formatting
-                # Format response text as JSON if needed
-                if not response_text.strip().startswith('{'):
-                    response_text = json.dumps({
-                        'refined_prompt': response_text.strip(),
-                        'rationale': 'Refined using Gemini with prompt engineering best practices.'
-                    })
+                response_text = response.choices[0].message.content.strip()
+                print(f"[v0] OpenAI response received, content: {response_text[:200]}...")
 
                 try:
                     result = json.loads(response_text)
@@ -159,7 +144,7 @@ Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep 
                         # Create properly formatted JSON instead of raising an error
                         return {
                             'refined_prompt': response_text.strip(),
-                            'rationale': 'Refined using Gemini with prompt engineering best practices.'
+                            'rationale': 'Refined using OpenAI with prompt engineering best practices.'
                         }
 
                 except json.JSONDecodeError as e:
@@ -167,7 +152,7 @@ Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep 
                     # Create properly formatted response
                     return {
                         'refined_prompt': response_text.strip(),
-                        'rationale': 'Refined using Gemini with prompt engineering best practices.'
+                        'rationale': 'Refined using OpenAI with prompt engineering best practices.'
                     }
 
                 except Exception as e:
@@ -175,7 +160,7 @@ Return your response as JSON with 'refined_prompt' and 'rationale' fields. Keep 
                     raise Exception("An unexpected error occurred while processing the response.")
                     
             except Exception as e:
-                print(f"[v0] Gemini error: {e}")
-                raise Exception(f"Gemini API error: {e}")
+                print(f"[v0] OpenAI error: {e}")
+                raise Exception(f"OpenAI API error: {e}")
         
-        raise Exception("Gemini client not available - please set GEMINI_API_KEY environment variable")
+        raise Exception("OpenAI client not available - please set OPENAI_API_KEY environment variable")
